@@ -15,6 +15,12 @@ ARG DEV=false
 RUN python -m venv /py && \
     #upgrade pip
     /py/bin/pip install --upgrade pip && \
+    # Install postgresql client, its an adapter for psycopg2 to connect to postgresql
+    apk add --update --no-cache postgresql-client && \
+    # this set a virtual dependecies packages
+    apk add --update --no-cache --virtual .tmp-build-deps \
+    # the packages needed are listed below
+        build-base postgresql-dev musl-dev && \
     #install dependencies from requirements.txt
     /py/bin/pip install -r /tmp/requirements.txt && \
     if [ $DEV = "true" ]; \
@@ -22,6 +28,7 @@ RUN python -m venv /py && \
     fi && \
     #remove tmp directory, to remove all dependencies once created, to save space
     rm -rf /tmp && \
+    apk del .tmp-build-deps && \
     #call add user to create user, so dat we dont use the root user
     adduser \ 
         #we dont want people to use a password to use our container
